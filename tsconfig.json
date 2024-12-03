@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "lib": ["es2020"],
+    "resolveJsonModule": true,
+    "strictPropertyInitialization": false,
+    "strict": true,
+    "declaration": true,
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["src", "src/**/*.json"],
+  "exclude": ["node_modules", "dist"]
+}
