@@ -26,7 +26,7 @@ npm install @solana/web3.js @coral-xyz/anchor
 
 ```typescript
 const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
-const cluster = "devnet"; // or 'mainnet'
+const cluster = "devnet"; // or 'mainnet-beta'
 const authority = Keypair.generate(); // Optional
 
 const fomo = new Fomo(connection, cluster, authority);
@@ -61,26 +61,40 @@ await fomo.sellToken(
 ### Creating a Token
 
 ```typescript
-await fomo.createToken(
+const priorityFee = 0.001
+const requiredLiquidity = 27
+const initialBuy = 0
+const keypairBytes = Uint8Array.from([...])
+const mintKeypairSecret = Keypair.fromSecretKey(keypairBytes)
+
+const { transaction: tx } = await fomo.createToken(
   wallet.publicKey, // Creator's wallet
   "TokenName", // Token name
   "Symbol", // Token symbol
   "https://metadata.uri", // Metadata URI
   priorityFee, // Network priority fee
-  mintKeypairSecret, // Mint keypair secret
-  requiredLiquidity // Optional liquidity requirement
+  bs58.encode(mintKeypairSecret.secretKey), // Mint keypair secret
+  requiredLiquidity, // Optional liquidity requirement | Default: 85
+  initialBuy, // Optional | Default: 0
 );
+
+const { blockhash } = await this.connection.getLatestBlockhash()
+tx.message.recentBlockhash = blockhash
+tx.sign([mintKeypairSecret])
+
+const serializedTransaction = tx.serialize()
+const serializedTransactionBase64 = Buffer.from(serializedTransaction).toString('base64')
 ```
 
 ## Methods
 
-| Method              | Description                   | Parameters                                                                           |
-| ------------------- | ----------------------------- | ------------------------------------------------------------------------------------ |
-| `buyToken()`        | Purchase tokens               | `wallet`, `tokenMint`, `amount`, `slippage`, `priorityFee`, `purchaseCurrency`       |
-| `sellToken()`       | Sell tokens                   | `wallet`, `tokenMint`, `amount`, `slippage`, `priorityFee`, `sellCurrency`           |
-| `createToken()`     | Launch new token              | `wallet`, `name`, `symbol`, `uri`, `priorityFee`, `mintKeypair`, `requiredLiquidity` |
-| `getGlobalData()`   | Retrieve global contract data | -                                                                                    |
-| `getBondingCurve()` | Get bonding curve details     | `tokenMint`                                                                          |
+| Method              | Description                   | Parameters                                                                             |
+| ------------------- | ----------------------------- |----------------------------------------------------------------------------------------|
+| `buyToken()`        | Purchase tokens               | `wallet`, `tokenMint`, `amount`, `slippage`, `priorityFee`, `purchaseCurrency`         |
+| `sellToken()`       | Sell tokens                   | `wallet`, `tokenMint`, `amount`, `slippage`, `priorityFee`, `sellCurrency`             |
+| `createToken()`     | Launch new token              | `wallet`, `name`, `symbol`, `uri`, `priorityFee`, `mintKeypair`, `requiredLiquidity`, `initialBuy` |
+| `getGlobalData()`   | Retrieve global contract data | -                                                                                      |
+| `getBondingCurve()` | Get bonding curve details     | `tokenMint`                                                                            |
 
 ## Configuration
 
