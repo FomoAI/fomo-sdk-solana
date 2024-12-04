@@ -138,15 +138,25 @@ const signedTx = await walletInstance.signTransaction(deserializedTx)
 const txHash = await fomo.sendTransaction(connection, signedTx)
 ```
 
+### Calculate Price
+
+```typescript
+const { virtualSolReserve, virtualTokenReserve, realSolReserve, realTokenReserve } = await fomo.getBondingCurve(new PublicKey("Token Address"))
+
+const price = fomo.calculatePrice(virtualSolReserve, virtualTokenReserve, realSolReserve, realTokenReserve)
+```
+
 ## Methods
 
-| Method              | Description                   | Parameters                                                                             |
-| ------------------- | ----------------------------- |----------------------------------------------------------------------------------------|
-| `buyToken()`        | Purchase tokens               | `wallet`, `tokenMint`, `amount`, `slippage`, `priorityFee`, `purchaseCurrency`         |
-| `sellToken()`       | Sell tokens                   | `wallet`, `tokenMint`, `amount`, `slippage`, `priorityFee`, `sellCurrency`             |
-| `createToken()`     | Launch new token              | `wallet`, `name`, `symbol`, `uri`, `priorityFee`, `mintKeypair`, `requiredLiquidity`, `initialBuy` |
-| `getGlobalData()`   | Retrieve global contract data | -                                                                                      |
-| `getBondingCurve()` | Get bonding curve details     | `tokenMint`                                                                            |
+
+| Method              | Description                   | Parameters                                                                                        |
+| ------------------- | ----------------------------- |---------------------------------------------------------------------------------------------------|
+| `buyToken()`        | Purchase tokens               | `wallet`, `tokenMint`, `amount`, `slippage`, `priorityFee`, `purchaseCurrency`                    |
+| `sellToken()`       | Sell tokens                   | `wallet`, `tokenMint`, `amount`, `slippage`, `priorityFee`, `sellCurrency`                        |
+| `createToken()`     | Launch new token              | `wallet`, `name`, `symbol`, `uri`, `priorityFee`, `mintKeypair`, `requiredLiquidity`, `initialBuy`|
+| `getGlobalData()`   | Retrieve global contract data | -                                                                                                 |
+| `getBondingCurve()` | Get bonding curve details     | `tokenMint`                                                                                       |
+| `calculatePrice()`  | Getting a price               | `virtualSolReserve`, `virtualTokenReserve`, `realSolReserve`, `realTokenReserve`                  |
 | `trade()`           | Trade token on Raydium        | `wallet`, `priorityFee`, `amountToTrade`, `fromTokenMint`, `toTokenMint`, `slippage`   |
 
 ## Configuration
