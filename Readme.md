@@ -35,7 +35,7 @@ const fomo = new Fomo(connection, cluster, authority);
 ### Buying Tokens
 
 ```typescript
-await fomo.buyToken(
+const versionedTx = await fomo.buyToken(
   wallet.publicKey, // Buyer's wallet
   tokenMint, // Token mint address
   amount, // Amount to spend
@@ -43,12 +43,23 @@ await fomo.buyToken(
   priorityFee, // Network priority fee
   "sol" // Purchase currency
 );
+
+const { blockhash } = await this.connection.getLatestBlockhash()
+versionedTx.message.recentBlockhash = blockhash
+
+const serializedTransaction = versionedTx.serialize()
+const serializedTransactionBase64 = Buffer.from(serializedTransaction).toString('base64')
+
+const deserializedTx = VersionedTransaction.deserialize(Buffer.from(serializedTransactionBase64, 'base64'))
+
+const signedTx = await walletInstance.signTransaction(deserializedTx)
+const txHash = await fomo.sendTransaction(connection, signedTx)
 ```
 
 ### Selling Tokens
 
 ```typescript
-await fomo.sellToken(
+const versionedTx = await fomo.sellToken(
   wallet.publicKey, // Seller's wallet
   tokenMint, // Token mint address
   amount, // Amount to sell
@@ -56,6 +67,17 @@ await fomo.sellToken(
   priorityFee, // Network priority fee
   "token" // Sell currency type
 );
+
+const { blockhash } = await this.connection.getLatestBlockhash()
+versionedTx.message.recentBlockhash = blockhash
+
+const serializedTransaction = versionedTx.serialize()
+const serializedTransactionBase64 = Buffer.from(serializedTransaction).toString('base64')
+
+const deserializedTx = VersionedTransaction.deserialize(Buffer.from(serializedTransactionBase64, 'base64'))
+
+const signedTx = await walletInstance.signTransaction(deserializedTx)
+const txHash = await fomo.sendTransaction(connection, signedTx)
 ```
 
 ### Creating a Token
@@ -67,7 +89,7 @@ const initialBuy = 0
 const keypairBytes = Uint8Array.from([...])
 const mintKeypairSecret = Keypair.fromSecretKey(keypairBytes)
 
-const { transaction: tx } = await fomo.createToken(
+const { transaction: versionedTx } = await fomo.createToken(
   wallet.publicKey, // Creator's wallet
   "TokenName", // Token name
   "Symbol", // Token symbol
@@ -79,11 +101,41 @@ const { transaction: tx } = await fomo.createToken(
 );
 
 const { blockhash } = await this.connection.getLatestBlockhash()
-tx.message.recentBlockhash = blockhash
-tx.sign([mintKeypairSecret])
+versionedTx.message.recentBlockhash = blockhash
+versionedTx.sign([mintKeypairSecret])
 
-const serializedTransaction = tx.serialize()
+const serializedTransaction = versionedTx.serialize()
 const serializedTransactionBase64 = Buffer.from(serializedTransaction).toString('base64')
+
+const deserializedTx = VersionedTransaction.deserialize(Buffer.from(serializedTransactionBase64, 'base64'))
+
+const signedTx = await walletInstance.signTransaction(deserializedTx)
+const txHash = await fomo.sendTransaction(connection, signedTx)
+```
+
+### Trade on Raydium
+
+```typescript
+const priorityFee = 0.001
+const slippage = 0.5
+const amountToTrade = 1_000_000
+
+const versionedTx = await fomo.trade(
+  wallet.publicKey, // Creator's wallet
+  priorityFee, // Network priority fee
+  amountToTrade, //Amount of X token to trade
+  new PublicKey("from"), //From token address
+  new PublicKey("to"), //To token address
+  slippage, //slippage tolerance
+);
+
+const serializedTransaction = versionedTx.serialize()
+const serializedTransactionBase64 = Buffer.from(serializedTransaction).toString('base64')
+
+const deserializedTx = VersionedTransaction.deserialize(Buffer.from(serializedTransactionBase64, 'base64'))
+
+const signedTx = await walletInstance.signTransaction(deserializedTx)
+const txHash = await fomo.sendTransaction(connection, signedTx)
 ```
 
 ## Methods
@@ -95,6 +147,7 @@ const serializedTransactionBase64 = Buffer.from(serializedTransaction).toString(
 | `createToken()`     | Launch new token              | `wallet`, `name`, `symbol`, `uri`, `priorityFee`, `mintKeypair`, `requiredLiquidity`, `initialBuy` |
 | `getGlobalData()`   | Retrieve global contract data | -                                                                                      |
 | `getBondingCurve()` | Get bonding curve details     | `tokenMint`                                                                            |
+| `trade()`           | Trade token on Raydium        | `wallet`, `priorityFee`, `amountToTrade`, `fromTokenMint`, `toTokenMint`, `slippage`   |
 
 ## Configuration
 
